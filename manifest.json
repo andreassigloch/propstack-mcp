@@ -1,7 +1,7 @@
 {
   "manifest_version": "0.3",
   "name": "mcp-propstack",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "display_name": "PropStack MCP Server",
   "description": "MCP server for PropStack real estate API integration with context-optimized bandwidth handling",
   "author": {
