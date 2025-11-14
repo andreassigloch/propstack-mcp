@@ -1,0 +1,23 @@
+{
+  "name": "PropStack",
+  "description": "PropStack real estate API integration for German property management",
+  "author": "andreas@siglochconsulting",
+  "license": "MIT",
+  "package": {
+    "registryType": "npm",
+    "identifier": "@sigloch/mcp-propstack",
+    "version": "0.1.0"
+  },
+  "transport": {
+    "type": "stdio"
+  },
+  "configuration": {
+    "env": {
+      "PROPSTACK_API_KEY": {
+        "description": "PropStack API key (create at propstack.de)",
+        "required": true,
+        "secret": true
+      }
+    }
+  }
+}

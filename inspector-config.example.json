@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "propstack": {
+      "command": "node",
+      "args": ["dist/index.js"],
+      "env": {
+        "PROPSTACK_API_KEY": "your-api-key-here"
+      }
+    }
+  }
+}
