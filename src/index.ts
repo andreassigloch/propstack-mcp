@@ -29,6 +29,41 @@ if (!PROPSTACK_API_KEY) {
 // Initialize PropStack client
 const propstack = new PropStackClient({ apiKey: PROPSTACK_API_KEY });
 
+/**
+ * DSGVO-compliant data sanitization
+ * - Rounds GPS coordinates to ~111m precision (3 decimal places)
+ * - Removes broker contact data
+ * - Optionally removes media fields
+ */
+function sanitizeProperty(property: any, removeMedia = false): any {
+  const sanitized = { ...property };
+
+  // Round GPS coordinates to 3 decimal places (~111m precision)
+  if (typeof sanitized.lat === 'number') {
+    sanitized.lat = Math.round(sanitized.lat * 1000) / 1000;
+  }
+  if (typeof sanitized.lng === 'number') {
+    sanitized.lng = Math.round(sanitized.lng * 1000) / 1000;
+  }
+
+  // Remove broker personal data
+  delete sanitized.broker;
+  delete sanitized.openimmo_email;
+  delete sanitized.openimmo_firstname;
+  delete sanitized.openimmo_lastname;
+  delete sanitized.openimmo_phone;
+
+  // Optionally remove media fields
+  if (removeMedia) {
+    delete sanitized.images;
+    delete sanitized.documents;
+    delete sanitized.videos;
+    delete sanitized['360_views'];
+  }
+
+  return sanitized;
+}
+
 // Create MCP server
 const server = new Server(
   {
@@ -163,11 +198,14 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const { unit_id } = request.params.arguments as { unit_id: string };
         const property = await propstack.getProperty(unit_id);
 
+        // Sanitize: round GPS, remove broker data
+        const sanitized = sanitizeProperty(property, false);
+
         return {
           content: [
             {
               type: 'text',
-              text: JSON.stringify(property, null, 2),
+              text: JSON.stringify(sanitized, null, 2),
             },
           ],
         };
@@ -298,15 +336,15 @@ server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
     const unit_id = singleMatch[1];
     const property = await propstack.getProperty(unit_id);
 
-    // Filter out media fields
-    const { images, documents, videos, ...propertyWithoutMedia } = property as any;
+    // Sanitize: round GPS, remove broker data AND media fields
+    const sanitized = sanitizeProperty(property, true);
 
     return {
       contents: [
         {
           uri,
           mimeType: 'application/json',
-          text: JSON.stringify(propertyWithoutMedia, null, 2),
+          text: JSON.stringify(sanitized, null, 2),
         },
       ],
     };
@@ -318,12 +356,15 @@ server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
     const unit_id = singleAllMatch[1];
     const property = await propstack.getProperty(unit_id);
 
+    // Sanitize: round GPS, remove broker data (keep media)
+    const sanitized = sanitizeProperty(property, false);
+
     return {
       contents: [
         {
           uri,
           mimeType: 'application/json',
-          text: JSON.stringify(property, null, 2),
+          text: JSON.stringify(sanitized, null, 2),
         },
       ],
     };
@@ -366,13 +407,16 @@ server.setRequestHandler(GetPromptRequestSchema, async (request) => {
 
     const response = await propstack.searchProperties(params);
 
+    // Sanitize all units: round GPS, remove broker data (minimal overview, no media)
+    const sanitizedUnits = response.units.map(unit => sanitizeProperty(unit, true));
+
     return {
       messages: [
         {
           role: 'user',
           content: {
             type: 'text',
-            text: `Generate a summary overview for these ${response.total} properties:\n${JSON.stringify(response.units, null, 2)}`,
+            text: `Generate a summary overview for these ${response.total} properties:\n${JSON.stringify(sanitizedUnits, null, 2)}`,
           },
         },
       ],

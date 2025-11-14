@@ -1,0 +1,40 @@
+# Secret configuration files
+.claude/
+.mcp.json
+inspector-config.json
+
+# Development files
+docs/
+tests/
+test-manual.sh
+*.test.ts
+vitest.config.ts
+
+# Development dependencies only
+node_modules/@types/
+node_modules/typescript/
+node_modules/vitest/
+node_modules/vite/
+node_modules/vite-node/
+node_modules/@vitest/
+node_modules/@esbuild/
+node_modules/@rollup/
+node_modules/esbuild/
+node_modules/rollup/
+
+# Build artifacts
+*.map
+dist/*.d.ts
+dist/*.d.ts.map
+
+# IDE
+.vscode/
+.idea/
+
+# Git
+.git/
+.gitignore
+
+# Temporary
+*.tmp
+*.log

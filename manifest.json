@@ -1,0 +1,64 @@
+{
+  "manifest_version": "0.3",
+  "name": "mcp-propstack",
+  "version": "0.1.0",
+  "display_name": "PropStack MCP Server",
+  "description": "MCP server for PropStack real estate API integration with context-optimized bandwidth handling",
+  "author": {
+    "name": "Andreas Sigloch",
+    "email": "andreas@siglochconsulting.de"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/andreassigloch/propstack-mcp"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "propstack",
+    "real-estate",
+    "immobilien",
+    "api",
+    "crm"
+  ],
+  "server": {
+    "type": "node",
+    "entry_point": "dist/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/dist/index.js"],
+      "env": {
+        "PROPSTACK_API_KEY": "${user_config.api_key}"
+      }
+    }
+  },
+  "user_config": {
+    "api_key": {
+      "type": "string",
+      "title": "PropStack API Key",
+      "description": "Your PropStack API key (read-only permissions recommended)",
+      "required": true
+    }
+  },
+  "tools": [
+    {
+      "name": "propstack_search_properties",
+      "description": "Search properties with filters. Returns overview: id, unit_id, name, city, street, status, price, living_space, rooms. Context-optimized without expand=1 (75% less data)."
+    },
+    {
+      "name": "propstack_get_property",
+      "description": "Get complete details for a specific property by unit_id. Returns all 275 fields including images, descriptions, and detailed features."
+    },
+    {
+      "name": "propstack_list_statuses",
+      "description": "List all available property statuses with their IDs"
+    }
+  ],
+  "compatibility": {
+    "claude_desktop": ">=0.10.0",
+    "platforms": ["darwin", "win32", "linux"],
+    "runtimes": {
+      "node": ">=18.0.0"
+    }
+  }
+}

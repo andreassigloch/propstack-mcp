@@ -1,32 +1,49 @@
 # PropStack MCP Server
 
-Model Context Protocol (MCP) server for PropStack real estate API integration.
+Model Context Protocol (MCP) server for PropStack real estate API integration with DSGVO-compliant data handling.
 
-** Warning: there is absolutely no warranty for any damage to your propstack data or leak of GDPR / DSVGO relevant data! Choose your API-Key permissions VERY Carefully. It is NOT designed tested for write operations **
+**Read-Only Server:** This server only provides read access to PropStack data. No write/update operations.
 
+**Privacy:** GPS coordinates are rounded to ~111m precision. Broker contact data is filtered from responses.
 
-## Quick Start
+## Installation
 
-### Installation
+### Option 1: MCPB Bundle (Recommended for Non-Technical Users)
+
+1. Download `propstack-mcp-v0.1.0.mcpb` from [Releases](https://github.com/andreassigloch/propstack-mcp/releases)
+2. Double-click the `.mcpb` file to install
+3. Enter your PropStack API key when prompted
+4. Restart Claude Desktop
+
+**Updates:** Download new `.mcpb` file from Releases, uninstall old version, install new version
+
+### Option 2: npm Package (Recommended for Technical Users)
 
 ```bash
-# Via npx (no installation required)
-npx @sigloch/mcp-propstack
+# Global installation
+npm install -g mcp-propstack
 
-# Or install globally
-npm install -g @sigloch/mcp-propstack
+# Or use with npx (no installation)
+npx mcp-propstack
 ```
 
-### Configuration
+**Updates:**
+```bash
+npm update -g mcp-propstack
+# or
+npm install -g mcp-propstack@latest
+```
 
-Add to your Claude Code or compatible MCP client configuration:
+### Option 3: Claude Desktop Manual Config
+
+Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS):
 
 ```json
 {
   "mcpServers": {
     "propstack": {
       "command": "npx",
-      "args": ["-y", "@sigloch/mcp-propstack"],
+      "args": ["-y", "mcp-propstack@latest"],
       "env": {
         "PROPSTACK_API_KEY": "your-api-key-here"
       }
@@ -35,60 +52,82 @@ Add to your Claude Code or compatible MCP client configuration:
 }
 ```
 
-## Security Best Practices
+**Updates:** Automatic with `@latest`, or change version number
 
-### 1. Create a Restricted API Key
+## Security & Privacy
 
-In PropStack dashboard:
-- Enable only required permissions (e.g., read-only for queries)
-- Add IP whitelist if using from static location
+### DSGVO Compliance
+
+This server implements privacy-by-design:
+- ✅ GPS coordinates rounded to 3 decimal places (~111m precision)
+- ✅ Broker personal contact data removed from responses
+- ✅ No persistent storage of user data
+- ✅ Read-only API access (no write operations)
+
+### API Key Security
+
+**Create a restricted API key in PropStack:**
+- Enable **read-only** permissions only
 - Set expiration date for temporary use
+- Add IP whitelist if possible
+- Never commit keys to version control
 
-### 2. Store Key Securely
-
-- Use environment variables (never commit to git)
+**Secure storage:**
+- Use environment variables
 - Add `.env` to `.gitignore`
 - Use `chmod 600` on config files
-- Consider 1Password CLI for key injection
 - Rotate keys periodically
-
-### 3. Monitor Usage
-
-- Review PropStack API logs regularly
-- Set up alerts for unusual activity
-- Revoke compromised keys immediately
-- Use different keys for different projects
 
 ## Features
 
 ### Tools
 
-- **propstack_search_properties**: Search with filters (price, area, type)
-- **propstack_get_property**: Get property details by ID
-- **propstack_list_statuses**: List available property statuses
-- **propstack_create_property**: Create new property
-- **propstack_update_property**: Update existing property
+**propstack_search_properties**
+- Search properties with filters (status, price, area, type)
+- Returns: id, unit_id, name, city, street, status, price, living_space, rooms
+- Context-optimized (75% less data vs full expand)
+- BEST PRACTICE: Filter by status `"vermarktung,reserviert"` for active listings
+
+**propstack_get_property**
+- Get complete details by unit_id
+- Returns ~275 fields including images, descriptions, features
+- Privacy-filtered: GPS rounded, broker data removed
+
+**propstack_list_statuses**
+- List all available property statuses with IDs
+- Use for filtering searches
 
 ### Resources
 
-- **propstack://properties/recent**: Recent properties
+**propstack://properties/all**
+- Overview of all properties (id, name, city, street, status)
+
+**propstack://properties/active**
+- Properties with status Vermarktung or Reserviert
+
+**propstack://properties/single/{unit_id}**
+- Single property WITHOUT media (context-efficient)
+
+**propstack://properties/single_all/{unit_id}**
+- Single property WITH media (images, documents)
 
 ### Prompts
 
-- **propstack-compare**: Compare two properties
-- **propstack-market-report**: Generate market report
+**propstack-overview**
+- Generate overview summary of all properties
+- Optional: filter by status
 
-## Examples
+## Usage Examples
 
-### Search Properties
+### Search Active Apartments in Price Range
 
 ```typescript
-// Search apartments in price range
 propstack_search_properties({
+  status: "vermarktung,reserviert",
   price_from: 300000,
   price_to: 500000,
   property_type: "APARTMENT",
-  limit: 10
+  per: 50
 })
 ```
 
@@ -96,7 +135,15 @@ propstack_search_properties({
 
 ```typescript
 propstack_get_property({
-  property_id: "prop-abc123"
+  unit_id: "100"
+})
+```
+
+### Use Status Semantic Names
+
+```typescript
+propstack_search_properties({
+  status: "vermarktung,reserviert"  // or use IDs: "133880,133881"
 })
 ```
 
@@ -106,31 +153,71 @@ propstack_get_property({
 # Install dependencies
 npm install
 
-# Build
+# Build TypeScript
 npm run build
 
 # Run tests
 npm test
 
-# Watch mode
+# Watch mode (development)
 npm run dev
+
+# Create MCPB bundle
+npx @anthropic-ai/mcpb@latest pack
 ```
+
+## Technical Details
+
+**Technology Stack:**
+- Node.js 18+
+- TypeScript
+- MCP SDK 1.0.4
+- PropStack API v1
+
+**Context Optimization:**
+- Search uses minimal API response (no expand=1) → 75% bandwidth reduction
+- Overview resources return only essential fields
+- Full details only when explicitly requested
+
+**Privacy Implementation:**
+- GPS rounding: `Math.round(lat * 1000) / 1000`
+- Broker data filtering: removes `broker`, `openimmo_*` fields
+- Applied to all tools, resources, and prompts
 
 ## Requirements
 
-- Node.js 18+
-- PropStack API key
+- Node.js 18.0.0 or higher
+- PropStack API key (read-only permissions)
+- Claude Desktop 0.10.0+ (for MCPB installation)
+
+## Troubleshooting
+
+**Connection fails:**
+- Check API key is correct
+- Verify read permissions are enabled in PropStack
+- Check network connectivity to api.propstack.de
+
+**"Access to everything" warning:**
+- Normal for local MCP servers
+- Server runs with your user permissions
+- Review source code if concerned
+
+## Contributing
+
+This is a personal project. Issues and PRs welcome but no guarantees on response time.
 
 ## License
 
-MIT
+MIT License - See [LICENSE](LICENSE)
 
 ## Author
 
-andreas@siglochconsulting
+Andreas Sigloch
+andreas@siglochconsulting.de
 
 ## Links
 
-- [Documentation](./docs/Side-001-propstack-mcp-server.md)
-- [PropStack API](https://docs.propstack.de)
+- [PropStack API Documentation](https://docs.propstack.de)
 - [MCP Specification](https://modelcontextprotocol.io)
+- [GitHub Repository](https://github.com/andreassigloch/propstack-mcp)
+- [npm Package](https://www.npmjs.com/package/mcp-propstack)

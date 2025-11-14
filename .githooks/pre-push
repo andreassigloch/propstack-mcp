@@ -1,0 +1,53 @@
+#!/bin/sh
+#
+# Git pre-push hook
+# @author andreas@siglochconsulting
+#
+# Runs compliance checks before pushing to remote:
+# 1. DSGVO compliance check (privacy-by-design verification)
+# 2. Secrets scanner (prevent credential leaks)
+#
+# To bypass (not recommended): git push --no-verify
+#
+
+echo ""
+echo "🔒 Running pre-push compliance checks..."
+echo ""
+
+# Step 1: DSGVO Compliance Check
+echo "Step 1/2: DSGVO Compliance Check"
+echo "---------------------------------"
+npx tsx scripts/dsgvo-check.ts
+DSGVO_EXIT=$?
+
+if [ $DSGVO_EXIT -ne 0 ]; then
+  echo ""
+  echo "❌ Pre-push FAILED: DSGVO compliance check failed"
+  echo ""
+  echo "Fix the issues above or bypass with: git push --no-verify"
+  echo "(Not recommended - fix compliance issues instead)"
+  echo ""
+  exit 1
+fi
+
+# Step 2: Secrets Scanner
+echo "Step 2/2: Secrets Scanner"
+echo "-------------------------"
+npx tsx scripts/secrets-check.ts
+SECRETS_EXIT=$?
+
+if [ $SECRETS_EXIT -ne 0 ]; then
+  echo ""
+  echo "❌ Pre-push FAILED: Secrets found in code"
+  echo ""
+  echo "Remove secrets and add to .gitignore, or bypass with: git push --no-verify"
+  echo "(WARNING: Bypassing will push secrets to remote!)"
+  echo ""
+  exit 1
+fi
+
+# All checks passed
+echo ""
+echo "✅ All compliance checks passed"
+echo ""
+exit 0

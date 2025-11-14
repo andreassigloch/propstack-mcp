@@ -14,7 +14,10 @@ dist/
 inspector-config.json
 
 # Claude Code settings (contains API keys in permissions)
-.claude/
+.claude/settings.local.json
+.claude/*.json
+# But keep commands
+!.claude/commands/
 
 # Documentation (development notes, not for distribution)
 docs/
