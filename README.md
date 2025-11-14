@@ -1,6 +1,9 @@
 # PropStack MCP Server
 
-Official Model Context Protocol (MCP) server for PropStack real estate API integration.
+Model Context Protocol (MCP) server for PropStack real estate API integration.
+
+** Warning: there is absolutely no warranty for any damage to your propstack data or leak of GDPR / DSVGO relevant data! Choose your API-Key permissions VERY Carefully. It is NOT designed tested for write operations **
+
 
 ## Quick Start
 
