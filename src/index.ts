@@ -68,7 +68,7 @@ function sanitizeProperty(property: any, removeMedia = false): any {
 const server = new Server(
   {
     name: 'propstack-mcp-server',
-    version: '0.1.1',
+    version: '0.1.2',
   },
   {
     capabilities: {
