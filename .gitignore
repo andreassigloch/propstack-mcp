@@ -40,3 +40,4 @@ npm-debug.log*
 
 # Temporary files
 *.tmp
+*.mcpb

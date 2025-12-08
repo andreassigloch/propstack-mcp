@@ -37,12 +37,12 @@ jobs:
 
       - name: Publish (dry-run)
         if: ${{ inputs.dry-run == true }}
-        run: npm publish --access public --dry-run
+        run: npm publish --access public --dry-run --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish
         if: ${{ inputs.dry-run != true }}
-        run: npm publish --access public
+        run: npm publish --access public --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
