@@ -123,6 +123,13 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             },
           },
         },
+        annotations: {
+          title: 'Search Properties',
+          readOnlyHint: true,
+          destructiveHint: false,
+          idempotentHint: true,
+          openWorldHint: true,
+        },
       },
       {
         name: 'propstack_get_property',
@@ -137,6 +144,13 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           },
           required: ['unit_id'],
         },
+        annotations: {
+          title: 'Get Property Details',
+          readOnlyHint: true,
+          destructiveHint: false,
+          idempotentHint: true,
+          openWorldHint: true,
+        },
       },
       {
         name: 'propstack_list_statuses',
@@ -144,6 +158,13 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         inputSchema: {
           type: 'object',
           properties: {},
+        },
+        annotations: {
+          title: 'List Statuses',
+          readOnlyHint: true,
+          destructiveHint: false,
+          idempotentHint: true,
+          openWorldHint: true,
         },
       },
     ],
